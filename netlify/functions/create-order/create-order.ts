@@ -1,10 +1,25 @@
 import { Handler } from '@netlify/functions';
 import { Client, Environment } from 'square';
+import type { Order } from 'square';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+interface OrderItem {
+  menuItem: {
+    square_variation_id: string;
+  };
+  quantity: number;
+}
+
+interface OrderRequest {
+  order: {
+    id: string;
+    items: OrderItem[];
+  };
+}
 
 const square = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
@@ -21,13 +36,13 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { order } = JSON.parse(event.body || '');
+    const { order } = JSON.parse(event.body || '') as OrderRequest;
 
     const { result } = await square.ordersApi.createOrder({
       order: {
         locationId: process.env.SQUARE_LOCATION_ID!,
         lineItems: order.items.map((item: any) => ({
-          catalogObjectId: item.menuItem.square_variation_id,
+          catalogObjectId: item.menuItem.square_variation_id || undefined,
           quantity: item.quantity.toString()
         })),
         state: 'OPEN'
