@@ -1,8 +1,28 @@
 [build]
+  command = "npm run build"
+  publish = "dist"
   functions = "netlify/functions"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ./src"
+
+[build.environment]
+  VITE_GOOGLE_MAPS_API_KEY = "AIzaSyBEwiIYnLURFav4ZzvK9YKbVFJLCuEBXGE"
+  VITE_SQUARE_ACCESS_TOKEN = "$SQUARE_ACCESS_TOKEN"
+  VITE_SQUARE_LOCATION_ID = "$SQUARE_LOCATION_ID"
+  VITE_SQUARE_WEBHOOK_SIGNATURE_KEY = "$SQUARE_WEBHOOK_SIGNATURE_KEY"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 5173
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions.environment]
+  SQUARE_ACCESS_TOKEN = "$SQUARE_ACCESS_TOKEN"
+  SQUARE_LOCATION_ID = "$SQUARE_LOCATION_ID"
+  SQUARE_WEBHOOK_SIGNATURE_KEY = "$SQUARE_WEBHOOK_SIGNATURE_KEY"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
   
