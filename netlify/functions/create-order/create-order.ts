@@ -43,7 +43,7 @@ export const handler: Handler = async (event) => {
       order: {
         locationId: process.env.SQUARE_LOCATION_ID!,
         lineItems: order.items.map((item: any) => ({
-          catalogObjectId: item.menuItem.square_variation_id,
+          catalog_object_id: item.menuItem.square_variation_id,
           quantity: item.quantity.toString(),
           basePriceMoney: {
             amount: Math.round(item.menuItem.price * 100), // Convert to cents
