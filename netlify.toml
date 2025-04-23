@@ -1,10 +1,12 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
+  functions = "netlify/functions/"
   ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ./src"
 
 [build.environment]
+  Content-Security-Policy = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.squarecdn.com https://*.squareupsandbox.com; img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.supabase.co https://images.unsplash.com https://flagcdn.com; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.supabase.co https://*.squareupsandbox.com https://*.squareup.com; object-src 'none';"
+  VITE_GOOGLE_MAPS_API_KEY = "AIzaSyBEwiIYnLURFav4ZzvK9YKbVFJLCuEBXGE"
   VITE_SQUARE_ACCESS_TOKEN = "$SQUARE_ACCESS_TOKEN"
   VITE_SQUARE_LOCATION_ID = "$SQUARE_LOCATION_ID"
   VITE_SQUARE_WEBHOOK_SIGNATURE_KEY = "$SQUARE_WEBHOOK_SIGNATURE_KEY"
@@ -13,8 +15,11 @@
   command = "npm run dev"
   targetPort = 5173
 
-[functions]
-  node_bundler = "esbuild"
+[functions.environment]
+  RESEND_API_KEY = "$RESEND_API_KEY"
+  SQUARE_ACCESS_TOKEN = "$SQUARE_ACCESS_TOKEN"
+  SQUARE_LOCATION_ID = "$SQUARE_LOCATION_ID"
+  SQUARE_WEBHOOK_SIGNATURE_KEY = "$SQUARE_WEBHOOK_SIGNATURE_KEY"
 
 [functions.environment]
   SQUARE_ACCESS_TOKEN = "$SQUARE_ACCESS_TOKEN"
@@ -24,4 +29,47 @@
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Content-Security-Policy = "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.squarecdn.com https://*.squareupsandbox.com; img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.supabase.co https://images.unsplash.com https://flagcdn.com; connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.supabase.co https://*.squareupsandbox.com https://*.squareup.com; object-src 'none';"
+    Permissions-Policy = "geolocation=(self)"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
