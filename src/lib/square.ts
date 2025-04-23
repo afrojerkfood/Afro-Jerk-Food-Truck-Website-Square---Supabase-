@@ -8,7 +8,7 @@ export class SquareService {
    */
   static async createOrder(order: any) {
     try {
-      const response = await fetch('/api/create-order', {
+      const response = await fetch('/.netlify/functions/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order })
@@ -31,7 +31,7 @@ export class SquareService {
    */
   static async processPayment(orderId: string, nonce: string, amount: number) {
     try {
-      const response = await fetch('/api/process-payment', {
+      const response = await fetch('/.netlify/functions/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, nonce, amount })
