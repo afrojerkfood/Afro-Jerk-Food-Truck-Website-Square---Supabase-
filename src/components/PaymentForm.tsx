@@ -20,8 +20,8 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID?.trim();
-  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID?.trim();
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
     if (!applicationId || !locationId) {
@@ -48,16 +48,15 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     }
 
     try {
-      const payments = window.Square.payments(
-        applicationId,
-        locationId
-      );
+      const payments = window.Square.payments(applicationId, {
+        locationId: locationId,
+        applicationUrl: window.location.origin
+      });
 
       if (!payments) {
         throw new Error('Failed to initialize Square payments');
       }
 
-      
       const card = await payments.card();
       await card.attach('#card-container');
       setCard(card);
