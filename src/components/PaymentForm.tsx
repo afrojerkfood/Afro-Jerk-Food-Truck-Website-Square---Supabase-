@@ -19,6 +19,9 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
   const [card, setCard] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  // Get application ID from environment variables
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+
   useEffect(() => {
     // Load Square Web Payments SDK
     const script = document.createElement('script');
@@ -38,7 +41,10 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     }
 
     try {
-      const payments = window.Square.payments(import.meta.env.VITE_SQUARE_ACCESS_TOKEN, import.meta.env.VITE_SQUARE_LOCATION_ID);
+      const payments = window.Square.payments(applicationId, {
+        locationId: import.meta.env.VITE_SQUARE_LOCATION_ID,
+        environment: 'sandbox'
+      });
       const card = await payments.card();
       await card.attach('#card-container');
       setCard(card);
