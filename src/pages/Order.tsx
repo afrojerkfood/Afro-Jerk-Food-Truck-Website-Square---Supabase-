@@ -291,7 +291,14 @@ export default function Order() {
       // Navigate to confirmation page
       navigate('/order/confirmation', {
         state: {
-          order: { id: orderId, ...customerInfo, items: cart }
+          order: {
+            id: orderId,
+            ...customerInfo,
+            items: cart,
+            pickup_time: `${format(selectedDate, 'yyyy-MM-dd')}T${format(parse(selectedTime, 'h:mm aa', new Date()), 'HH:mm:ss')}`,
+            total_amount: calculateTotal(),
+            location_name: selectedLocation?.name
+          }
         }
       });
     } catch (error) {
