@@ -21,7 +21,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
   const [error, setError] = useState<string | null>(null);
 
   const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
-  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+  const locationId = "LHYHR6Y7X33KQ";
 
   useEffect(() => {
     if (!applicationId || !locationId) {
