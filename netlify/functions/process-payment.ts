@@ -33,6 +33,7 @@ export const handler: Handler = async (event) => {
 
     console.log('Processing payment:', { orderId, amount });
 
+    // Create payment with Square order ID
     const { result } = await square.paymentsApi.createPayment({
       sourceId: nonce,
       idempotencyKey: `${orderId}_payment`,
@@ -40,7 +41,8 @@ export const handler: Handler = async (event) => {
         amount: Math.round(amount * 100), // Convert to cents
         currency: 'USD'
       },
-      locationId: process.env.SQUARE_LOCATION_ID!
+      locationId: process.env.SQUARE_LOCATION_ID!,
+      orderId: orderId // Using Square order ID
     });
 
     console.log('Payment processed:', result.payment);
