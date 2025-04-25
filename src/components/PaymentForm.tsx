@@ -18,11 +18,17 @@ declare global {
 export default function PaymentForm({ amount, orderId, onSuccess, onError }: PaymentFormProps) {
   const [card, setCard] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
   const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
+    if (!applicationId || !locationId) {
+      setError('Missing Square configuration');
+      return;
+    }
+
     // Load Square Web Payments SDK
     const script = document.createElement('script');
     script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
@@ -32,7 +38,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     return () => {
       document.head.removeChild(script);
     };
-  }, []);
+  }, [applicationId, locationId]);
 
   async function initializeSquare() {
     if (!window.Square) {
@@ -41,10 +47,6 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     }
 
     try {
-      if (!applicationId || !locationId) {
-        throw new Error('Missing Square configuration');
-      }
-
       const payments = window.Square.payments(applicationId, {
         locationId,
         environment: 'sandbox'
@@ -54,6 +56,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
       await card.attach('#card-container');
       setCard(card);
     } catch (error) {
+      setError((error as Error).message);
       console.error('Error initializing Square:', error);
       onError(error as Error);
     }
@@ -95,13 +98,13 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
       <div className="bg-white p-6 rounded-xl border border-gray-200">
         <h3 className="text-lg font-bold mb-4">Payment Details</h3>
         
-        {/* Square Card Input Container */}
+        {error ? (
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+        ) : (
         <div 
           id="card-container"
           className="p-4 border border-gray-300 rounded-lg mb-4 min-h-[100px] focus-within:ring-2 focus-within:ring-[#eb1924] focus-within:border-transparent"
         />
-        {!applicationId || !locationId && (
-          <p className="text-red-500 text-sm mb-4">Payment system configuration error. Please try again later.</p>
         )}
 
         {/* Total Amount */}
