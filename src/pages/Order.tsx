@@ -273,17 +273,26 @@ export default function Order() {
     if (!orderId) return;
 
     try {
-      // Update order with payment ID
+      // Get original order ID from Supabase
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('square_order_id', orderId)
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Update order with payment ID and status
       await supabase
         .from('orders')
         .update({ square_payment_id: paymentId })
-        .eq('id', orderId);
+        .eq('id', orderData.id);
 
       // Send confirmation email
       await supabase.functions.invoke('send-order-email', {
         body: {
           order: {
-            id: orderId,
+            id: orderData.id,
             customer_name: customerInfo.name,
             customer_email: customerInfo.email,
             location_name: selectedLocation?.name,
