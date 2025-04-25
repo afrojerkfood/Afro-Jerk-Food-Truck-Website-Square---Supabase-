@@ -10,6 +10,7 @@ const corsHeaders = {
 interface OrderItem {
   menuItem: {
     square_variation_id: string;
+    name: string;
     price: number;
   };
   quantity: number;
@@ -44,6 +45,7 @@ export const handler: Handler = async (event) => {
         locationId: process.env.SQUARE_LOCATION_ID!,
         lineItems: order.items.map((item: any) => ({
           catalog_object_id: item.menuItem.square_variation_id,
+          name: item.menuItem.name,
           quantity: item.quantity.toString(),
           basePriceMoney: {
             amount: Math.round(item.menuItem.price * 100), // Convert to cents
