@@ -8,20 +8,18 @@ export class SquareService {
    */
   static async createOrder(order: any) {
     try {
-      console.log('Creating Square order:', order);
       const response = await fetch('/.netlify/functions/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order })
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create order');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create order');
       }
 
-      return data;
+      return await response.json();
     } catch (error) {
       console.error('Error creating Square order:', error);
       throw error;
@@ -31,22 +29,20 @@ export class SquareService {
   /**
    * Process payment in Square
    */
-  static async processPayment(squareOrderId: string, nonce: string, amount: number) {
+  static async processPayment(orderId: string, nonce: string, amount: number) {
     try {
-      console.log('Processing payment:', { squareOrderId, amount });
       const response = await fetch('/.netlify/functions/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: squareOrderId, nonce, amount })
+        body: JSON.stringify({ orderId, nonce, amount })
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to process payment');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to process payment');
       }
 
-      return data;
+      return await response.json();
     } catch (error) {
       console.error('Error processing payment:', error);
       throw error;
