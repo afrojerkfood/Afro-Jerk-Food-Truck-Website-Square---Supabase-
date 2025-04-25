@@ -197,12 +197,18 @@ export default function Order() {
     }
     
     try {
+      // Validate time format
       const parsedTime = parse(selectedTime, 'h:mm aa', new Date());
       if (!isValid(parsedTime)) {
         throw new Error('Invalid time format');
       }
+
+      // Validate date
+      if (!isValid(selectedDate)) {
+        throw new Error('Invalid pickup date');
+      }
+
       const time24 = format(parsedTime, 'HH:mm');
-      
       const pickupDateTime = parseISO(`${format(selectedDate, 'yyyy-MM-dd')}T${time24}:00`);
       const totalAmount = calculateTotal();
 
@@ -291,14 +297,14 @@ export default function Order() {
       // Navigate to confirmation page
       navigate('/order/confirmation', {
         state: {
-          order: {
-            id: orderId,
-            ...customerInfo,
+          order: { 
+            id: orderId, 
+            ...customerInfo, 
             items: cart,
-            pickup_time: `${format(selectedDate, 'yyyy-MM-dd')}T${format(parse(selectedTime, 'h:mm aa', new Date()), 'HH:mm:ss')}`,
+            pickup_time: pickupDateTime.toISOString(),
             total_amount: calculateTotal(),
-            location_name: selectedLocation?.name
-          }
+            location_name: selectedLocation?.name 
+          } 
         }
       });
     } catch (error) {
