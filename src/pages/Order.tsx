@@ -33,6 +33,7 @@ export default function Order() {
   const [showPayment, setShowPayment] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [menuCategories] = useState(['signatures', 'vegetarian', 'sides', 'drinks', 'combos', 'dessert', 'extras']);
+  const [pickupDateTime, setPickupDateTime] = useState<Date | null>(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -209,7 +210,8 @@ export default function Order() {
       }
 
       const time24 = format(parsedTime, 'HH:mm');
-      const pickupDateTime = parseISO(`${format(selectedDate, 'yyyy-MM-dd')}T${time24}:00`);
+      const dateTime = parseISO(`${format(selectedDate, 'yyyy-MM-dd')}T${time24}:00`);
+      setPickupDateTime(dateTime);
       const totalAmount = calculateTotal();
 
       // Create order in Supabase first
@@ -221,7 +223,7 @@ export default function Order() {
           customer_phone: customerInfo.phone,
           location_id: selectedLocation.id,
           total_amount: totalAmount,
-          pickup_time: pickupDateTime.toISOString(),
+          pickup_time: dateTime.toISOString(),
           status: 'pending'
         })
         .select()
@@ -277,6 +279,11 @@ export default function Order() {
 
   const handlePaymentSuccess = async (paymentId: string) => {
     if (!orderId) return;
+    if (!pickupDateTime) {
+      console.error('Missing pickup date/time');
+      toast.error('Error processing order: Missing pickup time');
+      return;
+    }
 
     try {
       // Get original order ID from Supabase
