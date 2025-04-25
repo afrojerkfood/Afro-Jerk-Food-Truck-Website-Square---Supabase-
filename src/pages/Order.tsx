@@ -251,7 +251,7 @@ export default function Order() {
         .eq('id', order.id);
 
       // Show payment form
-      setOrderId(order.id);
+      setOrderId(order.square_order_id);
       setShowPayment(true);
       setStep(4);
 
