@@ -20,8 +20,8 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = 'sandbox-sq0idb-G1yqU0DZ2g7Fgwd8prwbRw';
-  const locationId = 'LHYHR6Y7X33KQ';
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
     if (!applicationId || !locationId) {
