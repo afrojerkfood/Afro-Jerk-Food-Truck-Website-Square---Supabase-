@@ -20,8 +20,8 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = 'sandbox-sq0idb-G1yqU0DZ2g7Fgwd8prwbRw';
-  const locationId = 'LHYHR6Y7X33KQ';
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
     if (!applicationId || !locationId) {
@@ -48,7 +48,9 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     }
 
     try {
-      const payments = window.Square.payments(applicationId, locationId);
+      const payments = window.Square.payments(applicationId, {
+        locationId: locationId
+      });
 
       if (!payments) {
         throw new Error('Failed to initialize Square payments');
@@ -68,7 +70,6 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   async function handlePayment(e: React.FormEvent) {
     e.preventDefault();
     if (!card) {
-      toast.error('Payment form not initialized');
       setError('Payment system not ready. Please refresh and try again.');
       return;
     }
@@ -78,24 +79,27 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     try {
       const result = await card.tokenize();
       if (result.status === 'OK') {
-        // Process payment with Square
+        console.log('Card tokenized:', { orderId });
         const payment = await SquareService.processPayment(
           orderId,
           result.token,
           amount
         );
+
         if (payment?.id) {
           onSuccess(payment.id);
         } else {
           throw new Error('Payment failed');
         }
       } else {
-        throw new Error(result.errors[0].message);
+        throw new Error(result.errors?.[0]?.message || 'Card tokenization failed');
       }
     } catch (error: any) {
       console.error('Payment error:', error);
+      const errorMessage = error.message || 'Payment failed';
+      setError(errorMessage);
       onError(error);
-      toast.error(error.message || 'Payment failed');
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
