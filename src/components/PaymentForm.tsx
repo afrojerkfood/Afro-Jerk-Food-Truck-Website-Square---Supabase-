@@ -70,6 +70,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   async function handlePayment(e: React.FormEvent) {
     e.preventDefault();
     if (!card) {
+      toast.error('Payment form not initialized');
       setError('Payment system not ready. Please refresh and try again.');
       return;
     }
@@ -79,27 +80,24 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     try {
       const result = await card.tokenize();
       if (result.status === 'OK') {
-        console.log('Card tokenized:', { orderId });
+        // Process payment with Square
         const payment = await SquareService.processPayment(
           orderId,
           result.token,
           amount
         );
-
         if (payment?.id) {
           onSuccess(payment.id);
         } else {
           throw new Error('Payment failed');
         }
       } else {
-        throw new Error(result.errors?.[0]?.message || 'Card tokenization failed');
+        throw new Error(result.errors[0].message);
       }
     } catch (error: any) {
       console.error('Payment error:', error);
-      const errorMessage = error.message || 'Payment failed';
-      setError(errorMessage);
       onError(error);
-      toast.error(errorMessage);
+      toast.error(error.message || 'Payment failed');
     } finally {
       setLoading(false);
     }
