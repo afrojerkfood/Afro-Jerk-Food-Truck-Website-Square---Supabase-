@@ -42,7 +42,6 @@ export const handler: Handler = async (event) => {
         currency: 'USD'
       },
       orderId: orderId,
-      acceptPartialAuthorization: true,
       statementDescriptionIdentifier: 'AFROJERK'
     });
 
