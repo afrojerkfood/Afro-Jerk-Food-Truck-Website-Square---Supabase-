@@ -8,18 +8,20 @@ export class SquareService {
    */
   static async createOrder(order: any) {
     try {
+      console.log('Creating Square order:', order);
       const response = await fetch('/.netlify/functions/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create order');
+        throw new Error(data.error || 'Failed to create order');
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
       console.error('Error creating Square order:', error);
       throw error;
@@ -31,18 +33,20 @@ export class SquareService {
    */
   static async processPayment(orderId: string, nonce: string, amount: number) {
     try {
+      console.log('Processing payment:', { orderId, amount });
       const response = await fetch('/.netlify/functions/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, nonce, amount })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to process payment');
+        throw new Error(data.error || 'Failed to process payment');
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
       console.error('Error processing payment:', error);
       throw error;
