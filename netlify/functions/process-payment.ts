@@ -30,7 +30,9 @@ export const handler: Handler = async (event) => {
         amount: Math.round(amount * 100), // Convert to cents
         currency: 'USD'
       },
-      orderId: orderId
+      orderId: orderId,
+      locationId: process.env.SQUARE_LOCATION_ID // ✅ ADD THIS
+
     });
 
     return {
