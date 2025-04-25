@@ -197,7 +197,6 @@ export default function Order() {
     }
     
     try {
-      // Create order in database first
       const parsedTime = parse(selectedTime, 'h:mm aa', new Date());
       if (!isValid(parsedTime)) {
         throw new Error('Invalid time format');
@@ -207,7 +206,7 @@ export default function Order() {
       const pickupDateTime = parseISO(`${format(selectedDate, 'yyyy-MM-dd')}T${time24}:00`);
       const totalAmount = calculateTotal();
 
-      // Create order in database
+      // Create order in Supabase first
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -224,7 +223,7 @@ export default function Order() {
 
       if (orderError) throw orderError;
 
-      // Create order items
+      // Create order items in Supabase
       const orderItems = cart.map(item => ({
         order_id: order.id,
         menu_item_id: item.menuItem.id,
@@ -239,7 +238,7 @@ export default function Order() {
       if (itemsError) throw itemsError;
 
       // Create Square order
-      const squareOrder = await SquareService.createOrder({
+      const { squareOrderId } = await SquareService.createOrder({
         id: order.id,
         items: cart
       });
@@ -247,11 +246,13 @@ export default function Order() {
       // Update order with Square order ID
       await supabase
         .from('orders')
-        .update({ square_order_id: squareOrder.id })
+        .update({ 
+          square_order_id: squareOrderId
+        })
         .eq('id', order.id);
 
       // Show payment form
-      setOrderId(order.id);
+      setOrderId(squareOrderId);
       setShowPayment(true);
       setStep(4);
 
