@@ -31,13 +31,13 @@ export class SquareService {
   /**
    * Process payment in Square
    */
-  static async processPayment(orderId: string, nonce: string, amount: number) {
+  static async processPayment(squareOrderId: string, nonce: string, amount: number) {
     try {
-      console.log('Processing payment:', { orderId, amount });
+      console.log('Processing payment:', { squareOrderId, amount });
       const response = await fetch('/.netlify/functions/process-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, nonce, amount })
+        body: JSON.stringify({ orderId: squareOrderId, nonce, amount })
       });
 
       const data = await response.json();
