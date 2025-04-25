@@ -48,9 +48,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     }
 
     try {
-      const payments = window.Square.payments(applicationId, {
-        locationId: locationId
-      });
+      const payments = window.Square.payments(applicationId, locationId);
 
       if (!payments) {
         throw new Error('Failed to initialize Square payments');
