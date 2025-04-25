@@ -27,25 +27,24 @@ export const handler: Handler = async (event) => {
 
     const { orderId, nonce, amount } = JSON.parse(event.body);
 
+    // Ensure required fields
     if (!orderId || !nonce || !amount) {
       throw new Error('Missing required payment fields');
     }
 
-    console.log('Processing payment:', { orderId, amount });
-
-    // Create payment with Square order ID
     const { result } = await square.paymentsApi.createPayment({
       sourceId: nonce,
       idempotencyKey: `${orderId}_payment`,
+      autocomplete: true,
+      locationId: process.env.SQUARE_LOCATION_ID,
       amountMoney: {
         amount: Math.round(amount * 100), // Convert to cents
         currency: 'USD'
       },
-      locationId: process.env.SQUARE_LOCATION_ID!,
-      orderId: orderId // Using Square order ID
+      orderId: orderId,
+      acceptPartialAuthorization: true,
+      statementDescriptionIdentifier: 'AFROJERK'
     });
-
-    console.log('Payment processed:', result.payment);
 
     return {
       statusCode: 200,
