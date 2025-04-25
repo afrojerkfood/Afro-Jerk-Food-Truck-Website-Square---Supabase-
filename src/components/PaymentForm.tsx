@@ -20,7 +20,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const applicationId = import.meta.env.VITE_SQUARE_ACCESS_TOKEN;
   const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     try {
       const payments = window.Square.payments(applicationId, {
         locationId: locationId,
-        applicationUrl: window.location.origin
+        applicationId: applicationId
       });
 
       if (!payments) {
@@ -82,7 +82,11 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
       const result = await card.tokenize();
       if (result.status === 'OK') {
         // Process payment with Square
-        const payment = await SquareService.processPayment(orderId, result.token, amount);
+        const payment = await SquareService.processPayment(
+          orderId,
+          result.token,
+          amount
+        );
         if (payment?.id) {
           onSuccess(payment.id);
         } else {
@@ -104,13 +108,13 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     <form onSubmit={handlePayment} className="space-y-6">
       <div className="bg-white p-6 rounded-xl border border-gray-200">
         <h3 className="text-lg font-bold mb-4">Payment Details</h3>
-        
+
         {error ? (
           <p className="text-red-500 text-sm mb-4">{error}</p>
         ) : (
           <div 
             id="card-container"
-            className="p-4 border border-gray-300 rounded-lg mb-4 min-h-[100px] focus-within:ring-2 focus-within:ring-[#eb1924] focus-within:border-transparent"
+            className="p-4 border border-gray-300 rounded-lg mb-4 min-h-[100px]"
           />
         )}
 
