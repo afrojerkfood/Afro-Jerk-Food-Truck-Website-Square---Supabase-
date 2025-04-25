@@ -60,7 +60,9 @@ export const handler: Handler = async (event) => {
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify(result.order)
+      body: JSON.stringify(result.order, (_, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
     };
 
   } catch (error: any) {
@@ -68,7 +70,9 @@ export const handler: Handler = async (event) => {
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ error: error.message }, (_, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      )
     };
   }
 };
