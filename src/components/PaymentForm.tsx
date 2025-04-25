@@ -19,8 +19,8 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
   const [card, setCard] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Get application ID from environment variables
   const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
     // Load Square Web Payments SDK
@@ -41,10 +41,15 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     }
 
     try {
+      if (!applicationId || !locationId) {
+        throw new Error('Missing Square configuration');
+      }
+
       const payments = window.Square.payments(applicationId, {
-        locationId: import.meta.env.VITE_SQUARE_LOCATION_ID,
+        locationId,
         environment: 'sandbox'
       });
+      
       const card = await payments.card();
       await card.attach('#card-container');
       setCard(card);
@@ -90,11 +95,14 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
       <div className="bg-white p-6 rounded-xl border border-gray-200">
         <h3 className="text-lg font-bold mb-4">Payment Details</h3>
         
-        {/* Card Input Container */}
+        {/* Square Card Input Container */}
         <div 
           id="card-container"
           className="p-4 border border-gray-300 rounded-lg mb-4 min-h-[100px] focus-within:ring-2 focus-within:ring-[#eb1924] focus-within:border-transparent"
         />
+        {!applicationId || !locationId && (
+          <p className="text-red-500 text-sm mb-4">Payment system configuration error. Please try again later.</p>
+        )}
 
         {/* Total Amount */}
         <div className="flex justify-between items-center font-bold">
