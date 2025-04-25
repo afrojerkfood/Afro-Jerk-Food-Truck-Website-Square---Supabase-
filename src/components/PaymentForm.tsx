@@ -20,8 +20,8 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = process.env.SQUARE_APPLICATION_ID;
-  const locationId = process.env.SQUARE_LOCATION_ID;
+  const applicationId = 'sandbox-sq0idb-G1yqU0DZ2g7Fgwd8prwbRw';
+  const locationId = 'LHYHR6Y7X33KQ';
 
   useEffect(() => {
     if (!applicationId || !locationId) {
