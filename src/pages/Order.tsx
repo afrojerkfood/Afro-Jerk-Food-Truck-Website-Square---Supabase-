@@ -288,21 +288,6 @@ export default function Order() {
         .update({ square_payment_id: paymentId })
         .eq('id', orderData.id);
 
-      // Send confirmation email
-      await supabase.functions.invoke('send-order-email', {
-        body: {
-          order: {
-            id: orderData.id,
-            customer_name: customerInfo.name,
-            customer_email: customerInfo.email,
-            location_name: selectedLocation?.name,
-            items: cart,
-            total_amount: calculateTotal(),
-            pickup_time: selectedTime
-          }
-        }
-      });
-
       // Navigate to confirmation page
       navigate('/order/confirmation', {
         state: {
