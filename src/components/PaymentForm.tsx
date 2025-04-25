@@ -20,7 +20,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = import.meta.env.VITE_SQUARE_ACCESS_TOKEN;
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
   const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
 
   useEffect(() => {
@@ -48,10 +48,7 @@ const PaymentForm = ({ amount, orderId, onSuccess, onError }: PaymentFormProps) 
     }
 
     try {
-      const payments = window.Square.payments(applicationId, {
-        locationId: locationId,
-        applicationId: applicationId
-      });
+      const payments = window.Square.payments(applicationId, locationId);
 
       if (!payments) {
         throw new Error('Failed to initialize Square payments');
