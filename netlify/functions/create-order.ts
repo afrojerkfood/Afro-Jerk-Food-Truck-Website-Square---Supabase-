@@ -40,12 +40,11 @@ export const handler: Handler = async (event) => {
   try {
     const { order } = JSON.parse(event.body || '') as OrderRequest;
 
-    console.log('Creating order:', order);
-
     const { result } = await square.ordersApi.createOrder({
       order: {
         locationId: process.env.SQUARE_LOCATION_ID!,
         lineItems: order.items.map((item: any) => ({
+          catalog_object_id: item.menuItem.square_variation_id,
           name: item.menuItem.name,
           quantity: item.quantity.toString(),
           basePriceMoney: {
@@ -53,12 +52,10 @@ export const handler: Handler = async (event) => {
             currency: 'USD'
           }
         })),
-        state: 'DRAFT'
+        state: 'OPEN'
       },
       idempotencyKey: order.id
     });
-
-    console.log('Order created:', result.order);
 
     return {
       statusCode: 200,
