@@ -20,12 +20,13 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID;
-  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID;
+  const applicationId = import.meta.env.VITE_SQUARE_APPLICATION_ID?.trim();
+  const locationId = import.meta.env.VITE_SQUARE_LOCATION_ID?.trim();
 
   useEffect(() => {
     if (!applicationId || !locationId) {
-      setError('Missing Square configuration');
+      console.error('Missing Square configuration:', { applicationId, locationId });
+      setError('Payment system configuration is incomplete. Please try again later.');
       return;
     }
 
@@ -47,10 +48,15 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     }
 
     try {
-      const payments = window.Square.payments(applicationId, {
-        locationId,
-        environment: 'sandbox'
-      });
+      const payments = window.Square.payments(
+        applicationId,
+        locationId
+      );
+
+      if (!payments) {
+        throw new Error('Failed to initialize Square payments');
+      }
+
       
       const card = await payments.card();
       await card.attach('#card-container');
@@ -59,6 +65,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
       setError((error as Error).message);
       console.error('Error initializing Square:', error);
       onError(error as Error);
+      return;
     }
   }
 
@@ -66,6 +73,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
     e.preventDefault();
     if (!card) {
       toast.error('Payment form not initialized');
+      setError('Payment system not ready. Please refresh and try again.');
       return;
     }
 
@@ -101,7 +109,7 @@ export default function PaymentForm({ amount, orderId, onSuccess, onError }: Pay
         {error ? (
           <p className="text-red-500 text-sm mb-4">{error}</p>
         ) : (
-        <div 
+          <div 
           id="card-container"
           className="p-4 border border-gray-300 rounded-lg mb-4 min-h-[100px] focus-within:ring-2 focus-within:ring-[#eb1924] focus-within:border-transparent"
         />
