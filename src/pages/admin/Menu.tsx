@@ -201,32 +201,18 @@ export default function Menu() {
             key={item.id}
             className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="h-48 relative overflow-hidden">
+            <div className="aspect-square">
               <img
                 src={item.image_url || ''}
                 alt={item.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-lg"
               />
-              <div className="absolute top-2 right-2 flex gap-2">
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="p-2 rounded-full bg-white/90 hover:bg-white text-gray-600 hover:text-[#eb1924] transition-colors"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  className="p-2 rounded-full bg-white/90 hover:bg-white text-gray-600 hover:text-[#eb1924] transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
             </div>
 
             <div className="p-4">
-              <div className="flex justify-between items-start gap-4 mb-2">
-                <h3 className="font-medium">{item.name}</h3>
-                <span className="font-medium text-[#eb1924]">
+              <div className="flex justify-between items-start gap-4">
+                <h3 className="text-xl font-bold">{item.name}</h3>
+                <span className="text-lg font-bold text-[#eb1924]">
                   ${item.price.toFixed(2)}
                 </span>
               </div>
