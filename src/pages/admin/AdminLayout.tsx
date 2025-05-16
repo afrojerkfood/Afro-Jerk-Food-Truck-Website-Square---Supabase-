@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Utensils, CalendarDays, FileText, ShoppingBag, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Utensils, CalendarDays, FileText, ShoppingBag, LogOut, Menu, X, Image } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 
 const ADMIN_MENU = [
@@ -8,6 +8,7 @@ const ADMIN_MENU = [
   { path: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { path: '/admin/menu', label: 'Menu', icon: Utensils },
   { path: '/admin/schedule', label: 'Schedule', icon: CalendarDays },
+  { path: '/admin/gallery', label: 'Gallery', icon: Image },
   { path: '/admin/blog', label: 'Blog', icon: FileText },
 ];
 
