@@ -24,7 +24,10 @@ export default function Menu() {
   useEffect(() => {
     async function fetchMenuItems() {
       try {
-        const { data, error } = await supabase.from('menu_items').select('*');
+        const { data, error } = await supabase
+          .from('menu_items')
+          .select('*')
+          .order('display_order', { ascending: true });
 
         if (error) throw error;
         console.log('Fetched menu items:', data);
