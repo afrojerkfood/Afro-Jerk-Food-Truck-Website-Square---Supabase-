@@ -24,6 +24,7 @@ import AdminOrders from './pages/admin/Orders';
 import AdminMenu from './pages/admin/Menu';
 import AdminSchedule from './pages/admin/Schedule';
 import AdminBlog from './pages/admin/Blog';
+import AdminGallery from './pages/admin/Gallery';
 import ScrollToTop from './components/ScrollToTop'
 
 function Home() {
@@ -62,6 +63,7 @@ function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="menu" element={<AdminMenu />} />
             <Route path="schedule" element={<AdminSchedule />} />
+            <Route path="gallery" element={<AdminGallery />} />
             <Route path="blog" element={<AdminBlog />} />
           </Route>
         </Routes>
