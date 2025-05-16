@@ -204,6 +204,9 @@ export default function Orders() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <h3 className="font-medium">{order.id}</h3>
+                  <span className="text-sm text-gray-500">
+                    {format(new Date(order.created_at), 'MMM d, yyyy')}
+                  </span>
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order.id, e.target.value as Status)}
@@ -225,8 +228,8 @@ export default function Orders() {
                     ))}
                   </select>
                 </div>
-                <span className="text-sm text-gray-500">
-                  {format(new Date(order.created_at), 'h:mm a')}
+                <span className="text-sm text-gray-500 whitespace-nowrap">
+                  {format(new Date(order.created_at), 'h:mm aa')}
                 </span>
               </div>
 
