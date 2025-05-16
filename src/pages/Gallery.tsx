@@ -1,56 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Users, MapPin } from 'lucide-react';
+import { format } from 'date-fns';
+import { toast } from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
+import type { Database } from '../lib/database.types';
 
-const GALLERY_ITEMS = [
-  {
-    id: '1',
-    type: 'food',
-    title: 'Jerk Chicken Platter',
-    image: 'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?auto=format&fit=crop&q=80',
-    location: 'Charlotte Uptown',
-    date: '2024-03-15'
-  },
-  {
-    id: '2',
-    type: 'event',
-    title: 'Food Truck Friday',
-    image: 'https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?auto=format&fit=crop&q=80',
-    location: 'Rock Hill',
-    date: '2024-03-10'
-  },
-  {
-    id: '3',
-    type: 'food',
-    title: 'West African Peanut Stew',
-    image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&q=80',
-    location: 'Charlotte Uptown',
-    date: '2024-03-08'
-  },
-  {
-    id: '4',
-    type: 'event',
-    title: 'Community Festival',
-    image: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&q=80',
-    location: 'Rock Hill',
-    date: '2024-03-05'
-  },
-  {
-    id: '5',
-    type: 'food',
-    title: 'Suya Beef Skewers',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80',
-    location: 'Charlotte Uptown',
-    date: '2024-03-01'
-  },
-  {
-    id: '6',
-    type: 'food',
-    title: 'Jollof Rice Special',
-    image: 'https://cnkalkntbjisvbpjtojk.supabase.co/storage/v1/object/public/media//jollof-rice-recipe-23.jpg',
-    location: 'Rock Hill',
-    date: '2024-02-28'
-  }
-];
+type GalleryItem = Database['public']['Tables']['gallery_items']['Row'];
 
 const FILTERS = ['all', 'food', 'event'] as const;
 
@@ -59,8 +14,31 @@ type Filter = typeof FILTERS[number];
 export default function Gallery() {
   const [activeFilter, setActiveFilter] = useState<Filter>('all');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredItems = GALLERY_ITEMS.filter(
+  useEffect(() => {
+    fetchGalleryItems();
+  }, []);
+
+  async function fetchGalleryItems() {
+    try {
+      const { data, error } = await supabase
+        .from('gallery_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setGalleryItems(data);
+    } catch (error) {
+      console.error('Error fetching gallery items:', error);
+      toast.error('Failed to load gallery');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filteredItems = galleryItems.filter(
     item => activeFilter === 'all' || item.type === activeFilter
   );
 
@@ -101,36 +79,46 @@ export default function Gallery() {
 
       {/* Gallery Grid */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="group relative overflow-hidden rounded-xl bg-black cursor-pointer"
-              onClick={() => setSelectedImage(item.image)}
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-64 object-cover transition-transform group-hover:scale-105 group-hover:opacity-75"
-              />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {item.title}
-                </h3>
-                <div className="flex flex-col gap-2 text-white/90">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{item.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Camera className="w-4 h-4" />
-                    <span className="text-sm">{new Date(item.date).toLocaleDateString()}</span>
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-200 h-64 rounded-xl"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems.map((item) => (
+              <div
+                key={item.id}
+                className="group relative overflow-hidden rounded-xl bg-black cursor-pointer"
+                onClick={() => setSelectedImage(item.image_url)}
+              >
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="w-full h-64 object-cover transition-transform group-hover:scale-105 group-hover:opacity-75"
+                />
+                <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {item.title}
+                  </h3>
+                  <div className="flex flex-col gap-2 text-white/90">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm">{item.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Camera className="w-4 h-4" />
+                      <span className="text-sm">{format(new Date(item.created_at), 'MMM d, yyyy')}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Image Modal */}
