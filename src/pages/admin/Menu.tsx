@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Plus, Search, Pencil, Trash2, X, Leaf, Flame, Wheat } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, X, Leaf, Flame, Wheat, GripVertical } from 'lucide-react';
+import { DndContext, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { toast, Toaster } from 'react-hot-toast';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/database.types';
@@ -11,6 +14,104 @@ const CATEGORIES = ['all', 'signatures', 'vegetarian', 'sides', 'drinks', 'combo
 
 type Category = typeof CATEGORIES[number];
 
+interface SortableItemProps {
+  id: string;
+  item: MenuItem;
+  onEdit: (item: MenuItem) => void;
+  onDelete: (id: string) => void;
+}
+
+function SortableItem({ id, item, onEdit, onDelete }: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : 0,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+    >
+      <div className="flex items-center justify-between p-2 border-b bg-gray-50">
+        <div {...attributes} {...listeners} className="cursor-grab hover:text-gray-700">
+          <GripVertical className="w-5 h-5" />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(item)}
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(item.id)}
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="aspect-square">
+        <img
+          src={item.image_url || ''}
+          alt={item.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="p-4">
+        <div className="flex justify-between items-start gap-4">
+          <h3 className="text-xl font-bold">{item.name}</h3>
+          <span className="text-lg font-bold text-[#eb1924]">
+            ${item.price.toFixed(2)}
+          </span>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-3">
+          {item.description}
+        </p>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-full capitalize">
+            {item.category}
+          </span>
+          
+          <div className="flex gap-3">
+            {item.is_vegetarian && (
+              <span className="flex items-center gap-1 text-sm text-[#01a952]">
+                <Leaf className="w-4 h-4" />
+              </span>
+            )}
+            {item.is_spicy && (
+              <span className="flex items-center gap-1 text-sm text-[#eb1924]">
+                <Flame className="w-4 h-4" />
+              </span>
+            )}
+            {item.is_gluten_free && (
+              <span className="flex items-center gap-1 text-sm text-[#edba3a]">
+                <Wheat className="w-4 h-4" />
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Menu() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +121,20 @@ export default function Menu() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [formData, setFormData] = useState<Partial<MenuItem>>({});
 
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
+  );
+
   useEffect(() => {
     fetchMenuItems();
   }, []);
@@ -28,7 +143,8 @@ export default function Menu() {
     try {
       const { data, error } = await supabase
         .from('menu_items')
-        .select('*');
+        .select('*')
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       setItems(data);
@@ -135,6 +251,39 @@ export default function Menu() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = items.findIndex(item => item.id === active.id);
+    const newIndex = items.findIndex(item => item.id === over.id);
+    
+    const newItems = arrayMove(items, oldIndex, newIndex);
+    setItems(newItems);
+
+    try {
+      // Keep all existing item data while updating display order
+      const updates = newItems.map((item, index) => ({
+        ...item,
+        display_order: index + 1
+      }));
+
+      const { error } = await supabase
+        .from('menu_items')
+        .upsert(updates);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating item order:', error);
+      toast.error('Failed to update item order');
+      // Revert to original order
+      fetchMenuItems();
+    }
+  };
+
   return (
     <div>
       <Toaster position="top-right" />
@@ -195,62 +344,27 @@ export default function Menu() {
       </div>
 
       {/* Menu Items Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      <DndContext
+        sensors={sensors}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <SortableContext
+            items={filteredItems.map(item => item.id)}
+            strategy={verticalListSortingStrategy}
           >
-            <div className="aspect-square">
-              <img
-                src={item.image_url || ''}
-                alt={item.name}
-                className="w-full h-full object-cover rounded-lg"
+            {filteredItems.map((item) => (
+              <SortableItem
+                key={item.id}
+                id={item.id}
+                item={item}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
-            </div>
-
-            <div className="p-4">
-              <div className="flex justify-between items-start gap-4">
-                <h3 className="text-xl font-bold">{item.name}</h3>
-                <span className="text-lg font-bold text-[#eb1924]">
-                  ${item.price.toFixed(2)}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-600 mb-3">
-                {item.description}
-              </p>
-
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-full capitalize">
-                  {item.category}
-                </span>
-                
-                <div className="flex gap-3">
-                  {item.is_vegetarian && (
-                    <span className="flex items-center gap-1 text-sm text-[#01a952]">
-                      <Leaf className="w-4 h-4" />
-                      Vegetarian
-                    </span>
-                  )}
-                  {item.is_spicy && (
-                    <span className="flex items-center gap-1 text-sm text-[#eb1924]">
-                      <Flame className="w-4 h-4" />
-                      Spicy
-                    </span>
-                  )}
-                  {item.is_gluten_free && (
-                    <span className="flex items-center gap-1 text-sm text-[#edba3a]">
-                      <Wheat className="w-4 h-4" />
-                      Gluten Free
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            ))}
+          </SortableContext>
+        </div>
+      </DndContext>
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
