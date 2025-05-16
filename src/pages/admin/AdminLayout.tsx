@@ -21,11 +21,11 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       <Toaster position="top-right" />
       
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 z-50">
+      <aside className="hidden md:block w-64 bg-white border-r border-gray-200 pt-16">
         <div className="flex flex-col h-full">
           <Link to="/" className="flex items-center p-4 border-b">
             <img 
@@ -72,7 +72,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 h-16">
         <div className="flex items-center justify-between p-4">
           <Link className="flex items-center" to="/">
             <img 
@@ -130,7 +130,7 @@ export default function AdminLayout() {
       </div>
 
       {/* Main Content */}
-      <main className="md:ml-64 p-8 pt-20 md:pt-8">
+      <main className="flex-1 p-8 pt-20 md:pt-8">
         <Outlet />
       </main>
     </div>
